@@ -31,15 +31,15 @@ public class SoftDeleteService {
     }
 
     public void deleteUser(Long userId) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
 
-        List<Post> posts = postRepository.findAllByUserAndDeletedAtIsNull(user);
-        List<Comment> comments = new ArrayList<>(commentRepository.findAllByUserAndDeletedAtIsNull(user));
+        List<Post> posts = postRepository.findAllByUser(user);
+        List<Comment> comments = new ArrayList<>(commentRepository.findAllByUser(user));
 
         for (Post post : posts) {
             post.markDeleted();
-            comments.addAll(commentRepository.findAllByPostAndDeletedAtIsNull(post));
+            comments.addAll(commentRepository.findAllByPost(post));
         }
 
         for (Comment comment : comments) {
@@ -54,10 +54,10 @@ public class SoftDeleteService {
     }
 
     public void deletePost(Long postId) {
-        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
 
-        List<Comment> comments = commentRepository.findAllByPostAndDeletedAtIsNull(post);
+        List<Comment> comments = commentRepository.findAllByPost(post);
         for (Comment comment : comments) {
             comment.markDeleted();
         }
